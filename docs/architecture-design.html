@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库项目 — 架构与功能设计文档</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --accent: #06B6D4;
+            --accent-light: #67E8F9;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-main: #0F172A;
+            --bg-card: #1E293B;
+            --bg-card-hover: #334155;
+            --bg-code: #0D1117;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --border: #334155;
+            --border-light: #475569;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 24px 0;
+            z-index: 100;
+        }
+
+        .sidebar-title {
+            padding: 0 24px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-light);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-section {
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            padding: 8px 12px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 7px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13.5px;
+            transition: all 0.15s;
+        }
+
+        .sidebar a:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .sidebar a.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: var(--primary-light);
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 280px;
+            padding: 48px 64px;
+            max-width: 1200px;
+        }
+
+        .main h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .main h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 48px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 26px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .main h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-light);
+            margin-top: 32px;
+            margin-bottom: 14px;
+        }
+
+        .main h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+
+        .main p {
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+
+        .main ul, .main ol {
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            padding-left: 24px;
+        }
+
+        .main li { margin-bottom: 6px; }
+
+        .main strong { color: var(--text-primary); font-weight: 600; }
+
+        .main code {
+            font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+            background: var(--bg-card);
+            color: var(--accent-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .main pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .main pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .card h4 {
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            font-size: 13px;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--bg-card);
+        }
+
+        th {
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-light);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 8px 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover { background: rgba(79, 70, 229, 0.05); }
+
+        td code {
+            font-size: 12px;
+            color: var(--accent-light);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-primary { background: rgba(79, 70, 229, 0.2); color: var(--primary-light); }
+        .badge-accent { background: rgba(6, 182, 212, 0.2); color: var(--accent-light); }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Callout */
+        .callout {
+            background: rgba(79, 70, 229, 0.08);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .callout p { margin: 0; color: var(--text-secondary); }
+
+        .callout strong { color: var(--primary-light); }
+
+        /* Diagram containers */
+        .diagram-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .diagram-box svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Method tags */
+        .method {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: monospace;
+            min-width: 52px;
+            text-align: center;
+        }
+
+        .method-get { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .method-post { background: rgba(79, 70, 229, 0.2); color: var(--primary-light); }
+        .method-put { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .method-del { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .method-ws { background: rgba(6, 182, 212, 0.2); color: var(--accent-light); }
+
+        /* API endpoint styling */
+        .endpoint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .endpoint:last-child { border-bottom: none; }
+
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .endpoint-desc {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--bg-main);
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .timeline-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .timeline-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { width: 240px; }
+            .main { margin-left: 240px; padding: 32px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar Navigation -->
+<nav class="sidebar">
+    <div class="sidebar-title">Knowledge Base<br>架构设计文档</div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">概览</div>
+        <a href="#overview">1. 项目概述</a>
+        <a href="#tech-stack">2. 技术栈选型</a>
+        <a href="#architecture">3. 系统架构</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">后端设计</div>
+        <a href="#backend-structure">4. 后端目录结构</a>
+        <a href="#api-design">5. API 接口设计</a>
+        <a href="#db-schema">6. 数据库设计</a>
+        <a href="#es-index">7. Elasticsearch 索引</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">前端设计</div>
+        <a href="#frontend-structure">8. 前端目录结构</a>
+        <a href="#pages">9. 页面与组件</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">核心功能</div>
+        <a href="#feat-notes">10. 笔记管理与双向链接</a>
+        <a href="#feat-docs">11. 文档上传与解析</a>
+        <a href="#feat-ai">12. AI 对话与问答 (RAG)</a>
+        <a href="#feat-search">13. 全文搜索与标签</a>
+        <a href="#feat-auth">14. 权限与协作</a>
+        <a href="#feat-graph">15. 知识图谱</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">工程</div>
+        <a href="#deployment">16. 部署方案</a>
+        <a href="#roadmap">17. 开发路线图</a>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+
+<!-- ==================== 1. Overview ==================== -->
+<h1>知识库项目 — 架构与功能设计</h1>
+<p style="color: var(--text-muted); font-size: 14px;">文档版本 1.0 · 2026-09-21 · FastAPI + Vue 3 · MySQL + Elasticsearch</p>
+
+<h2 id="overview">1. 项目概述</h2>
+
+<div class="card-grid">
+    <div class="card">
+        <div class="card-icon">📝</div>
+        <h4>个人笔记知识库</h4>
+        <p>类似 Obsidian 的 Markdown 笔记系统，支持双向链接、标签分类、版本历史</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">🤖</div>
+        <h4>AI 智能问答</h4>
+        <p>基于 RAG 架构，结合知识库内容进行 AI 对话，支持流式回答与引用溯源</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">📄</div>
+        <h4>文档上传与解析</h4>
+        <p>支持 PDF/Word/Markdown/网页等格式的文档上传、内容提取与向量化</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">🔗</div>
+        <h4>知识图谱</h4>
+        <p>自动从笔记双向链接中构建知识图谱，可视化展示笔记间的关联关系</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">🔍</div>
+        <h4>全文搜索</h4>
+        <p>Elasticsearch 驱动的高性能搜索，支持多字段检索、分面过滤、高亮与联想</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">👥</div>
+        <h4>权限与协作</h4>
+        <p>用户认证、角色权限、知识空间共享，支持个人空间与团队协作</p>
+    </div>
+</div>
+
+<div class="callout">
+    <p><strong>设计目标：</strong>构建一个集笔记编辑、知识管理、AI 问答、文档解析于一体的高性能个人知识库平台。支持 Markdown 双向链接构建知识网络，Elasticsearch 提供秒级全文检索，RAG 架构实现智能问答，并通过知识图谱可视化知识关联。</p>
+</div>
+
+<!-- ==================== 2. Tech Stack ==================== -->
+<h2 id="tech-stack">2. 技术栈选型</h2>
+
+<h3>2.1 后端技术栈</h3>
+<div class="table-wrap">
+<table>
+    <thead>
+        <tr><th>分类</th><th>技术</th><th>版本</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>运行时</td><td>Python</td><td>3.12+</td><td>主开发语言</td></tr>
+        <tr><td>Web 框架</td><td>FastAPI</td><td>0.115+</td><td>异步 RESTful API + WebSocket</td></tr>
+        <tr><td>ORM</td><td>SQLAlchemy</td><td>2.0+</td><td>异步 MySQL ORM</td></tr>
+        <tr><td>数据库迁移</td><td>Alembic</td><td>1.13+</td><td>数据库版本管理</td></tr>
+        <tr><td>数据验证</td><td>Pydantic</td><td>v2</td><td>请求/响应数据模型验证</td></tr>
+        <tr><td>认证</td><td>python-jose + passlib</td><td>—</td><td>JWT 令牌 + 密码哈希</td></tr>
+        <tr><td>任务队列</td><td>Celery</td><td>5.4+</td><td>异步任务（文档解析、向量化、索引）</td></tr>
+        <tr><td>消息代理</td><td>Redis</td><td>7.x</td><td>Celery broker + 缓存</td></tr>
+        <tr><td>ES 客户端</td><td>elasticsearch-py</td><td>8.x</td><td>Elasticsearch 操作</td></tr>
+        <tr><td>AI 框架</td><td>LangChain</td><td>0.3+</td><td>RAG 管线编排</td></tr>
+        <tr><td>文档解析</td><td>PyMuPDF / python-docx / markdown</td><td>—</td><td>PDF / Word / Markdown 解析</td></tr>
+        <tr><td>对象存储</td><td>MinIO (S3 兼容)</td><td>—</td><td>上传文件存储</td></tr>
+        <tr><td>测试</td><td>pytest + httpx</td><td>—</td><td>单元测试 + API 测试</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h3>2.2 前端技术栈</h3>
+<div class="table-wrap">
+<table>
+    <thead>
+        <tr><th>分类</th><th>技术</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>框架</td><td>Vue 3 + TypeScript</td><td>SPA 应用开发</td></tr>
+        <tr><td>构建工具</td><td>Vite</td><td>极速开发与构建</td></tr>
+        <tr><td>状态管理</td><td>Pinia</td><td>全局状态（auth / note / chat）</td></tr>
+        <tr><td>路由</td><td>Vue Router 4</td><td>页面路由</td></tr>
+        <tr><td>UI 框架</td><td>Naive UI</td><td>组件库（暗色主题友好）</td></tr>
+        <tr><td>Markdown 编辑器</td><td>Milkdown</td><td>所见即所得 Markdown 编辑，支持双向链接插件</td></tr>
+        <tr><td>知识图谱</td><td>vis-network / D3.js</td><td>力导向图可视化</td></tr>
+        <tr><td>HTTP 客户端</td><td>Axios</td><td>API 调用</td></tr>
+        <tr><td>Markdown 渲染</td><td>markdown-it + Shiki</td><td>Markdown 渲染 + 代码高亮</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h3>2.3 基础设施</h3>
+<div class="table-wrap">
+<table>
+    <thead>
+        <tr><th>组件</th><th>版本</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>MySQL</td><td>8.0+</td><td>关系型数据存储（用户、笔记、文档元数据等）</td></tr>
+        <tr><td>Elasticsearch</td><td>8.x</td><td>全文搜索 + 向量检索（dense_vector）</td></tr>
+        <tr><td>Redis</td><td>7.x</td><td>缓存 + Celery broker + 会话存储</td></tr>
+        <tr><td>MinIO</td><td>—</td><td>S3 兼容对象存储，存放上传文件</td></tr>
+        <tr><td>Docker / Docker Compose</td><td>—</td><td>容器化部署</td></tr>
+        <tr><td>Nginx</td><td>—</td><td>反向代理 + 静态资源服务</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ==================== 3. Architecture ==================== -->
+<h2 id="architecture">3. 系统架构</h2>
+
+<h3>3.1 整体架构图</h3>
+<div class="diagram-box">
+<svg width="900" height="620" viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="g-fe" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#4F46E5" stop-opacity="0.08"/>
+        </linearGradient>
+        <linearGradient id="g-be" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.08"/>
+        </linearGradient>
+        <linearGradient id="g-data" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#10B981" stop-opacity="0.08"/>
+        </linearGradient>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 Z" fill="#64748B"/>
+        </marker>
+        <marker id="arrowAccent" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 Z" fill="#06B6D4"/>
+        </marker>
+    </defs>
+
+    <!-- Client Layer -->
+    <rect x="20" y="10" width="860" height="90" rx="10" fill="url(#g-fe)" stroke="#4F46E5" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="450" y="35" text-anchor="middle" fill="#818CF8" font-size="14" font-weight="700">客户端层 — Browser</text>
+    <rect x="60" y="45" width="150" height="40" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1"/>
+    <text x="135" y="70" text-anchor="middle" fill="#F1F5F9" font-size="13">笔记编辑器</text>
+    <rect x="240" y="45" width="150" height="40" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1"/>
+    <text x="315" y="70" text-anchor="middle" fill="#F1F5F9" font-size="13">知识图谱</text>
+    <rect x="420" y="45" width="150" height="40" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1"/>
+    <text x="495" y="70" text-anchor="middle" fill="#F1F5F9" font-size="13">AI 对话</text>
+    <rect x="600" y="45" width="150" height="40" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1"/>
+    <text x="675" y="70" text-anchor="middle" fill="#F1F5F9" font-size="13">搜索中心</text>
+
+    <!-- Nginx -->
+    <rect x="350" y="125" width="200" height="35" rx="8" fill="#334155" stroke="#475569" stroke-width="1"/>
+    <text x="450" y="148" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="600">Nginx (反向代理 + 静态资源)</text>
+    <line x1="450" y1="100" x2="450" y2="125" stroke="#64748B" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Backend Layer -->
+    <rect x="20" y="185" width="860" height="180" rx="10" fill="url(#g-be)" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="450" y="210" text-anchor="middle" fill="#06B6D4" font-size="14" font-weight="700">应用层 — FastAPI Backend</text>
+    <line x1="450" y1="160" x2="450" y2="185" stroke="#64748B" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- API Modules -->
+    <rect x="50" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="110" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">Auth API</text>
+    <rect x="185" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="245" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">Notes API</text>
+    <rect x="320" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="380" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">Documents API</text>
+    <rect x="455" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="515" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">Search API</text>
+    <rect x="590" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="650" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">AI / RAG API</text>
+    <rect x="725" y="225" width="120" height="40" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1"/>
+    <text x="785" y="250" text-anchor="middle" fill="#F1F5F9" font-size="12">Graph API</text>
+
+    <!-- Service Layer -->
+    <rect x="100" y="285" width="180" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="190" y="307" text-anchor="middle" fill="#94A3B8" font-size="12">Service Layer (业务逻辑)</text>
+    <rect x="300" y="285" width="180" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="390" y="307" text-anchor="middle" fill="#94A3B8" font-size="12">Markdown Parser</text>
+    <rect x="500" y="285" width="180" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="590" y="307" text-anchor="middle" fill="#94A3B8" font-size="12">Link Extractor</text>
+    <rect x="700" y="285" width="120" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="760" y="307" text-anchor="middle" fill="#94A3B8" font-size="12">Security</text>
+
+    <!-- Celery Worker -->
+    <rect x="120" y="340" width="300" height="35" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1"/>
+    <text x="270" y="363" text-anchor="middle" fill="#F59E0B" font-size="12" font-weight="600">Celery Workers (文档解析 / 向量化 / 索引)</text>
+    <rect x="450" y="340" width="300" height="35" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1"/>
+    <text x="600" y="363" text-anchor="middle" fill="#F59E0B" font-size="12" font-weight="600">LangChain RAG Pipeline</text>
+
+    <!-- Data Layer -->
+    <rect x="20" y="400" width="860" height="200" rx="10" fill="url(#g-data)" stroke="#10B981" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="450" y="425" text-anchor="middle" fill="#10B981" font-size="14" font-weight="700">数据层 — Data & Infrastructure</text>
+
+    <rect x="60" y="445" width="160" height="60" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1"/>
+    <text x="140" y="470" text-anchor="middle" fill="#10B981" font-size="13" font-weight="600">MySQL 8.0</text>
+    <text x="140" y="490" text-anchor="middle" fill="#64748B" font-size="11">关系型数据</text>
+
+    <rect x="250" y="445" width="160" height="60" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1"/>
+    <text x="330" y="470" text-anchor="middle" fill="#10B981" font-size="13" font-weight="600">Elasticsearch</text>
+    <text x="330" y="490" text-anchor="middle" fill="#64748B" font-size="11">全文搜索 + 向量</text>
+
+    <rect x="440" y="445" width="160" height="60" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1"/>
+    <text x="520" y="470" text-anchor="middle" fill="#10B981" font-size="13" font-weight="600">Redis</text>
+    <text x="520" y="490" text-anchor="middle" fill="#64748B" font-size="11">缓存 + Broker</text>
+
+    <rect x="630" y="445" width="160" height="60" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1"/>
+    <text x="710" y="470" text-anchor="middle" fill="#10B981" font-size="13" font-weight="600">MinIO</text>
+    <text x="710" y="490" text-anchor="middle" fill="#64748B" font-size="11">对象存储</text>
+
+    <!-- LLM API -->
+    <rect x="250" y="530" width="400" height="50" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="450" y="555" text-anchor="middle" fill="#818CF8" font-size="13" font-weight="600">LLM API (OpenAI / Anthropic / 本地模型)</text>
+    <text x="450" y="572" text-anchor="middle" fill="#64748B" font-size="11">Embedding + Chat Completion</text>
+
+    <!-- Connections -->
+    <line x1="140" y1="375" x2="140" y2="445" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+    <line x1="330" y1="375" x2="330" y2="445" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+    <line x1="520" y1="375" x2="520" y2="445" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+    <line x1="710" y1="375" x2="710" y2="445" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+    <line x1="450" y1="375" x2="450" y2="530" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowAccent)"/>
+</svg>
+</div>
+
+<h3>3.2 架构说明</h3>
+<ul>
+    <li><strong>客户端层：</strong>Vue 3 SPA，通过 Nginx 反向代理访问后端 API。笔记编辑器使用 Milkdown 提供所见即所得编辑体验，知识图谱使用 vis-network 力导向布局渲染。</li>
+    <li><strong>应用层：</strong>FastAPI 提供 RESTful API 和 WebSocket（AI 流式对话）。API 路由层只做参数校验和响应封装，业务逻辑下沉到 Service 层。</li>
+    <li><strong>异步任务层：</strong>Celery Workers 处理耗时任务——文档解析（PDF/Word 文本提取）、文本分块、Embedding 向量化、ES 索引同步。通过 Redis 作为消息代理实现任务分发。</li>
+    <li><strong>数据层：</strong>MySQL 存储结构化业务数据，Elasticsearch 同时承担全文搜索和向量检索（<code>dense_vector</code> 字段），Redis 负责缓存和 Celery broker，MinIO 存储上传的原始文件。</li>
+    <li><strong>AI 层：</strong>LangChain 编排 RAG 流程——检索（ES 向量 + 全文混合检索）→ 重排序 → LLM 生成。支持 OpenAI/Anthropic/本地模型，通过统一接口切换。</li>
+</ul>
+
+<!-- ==================== 4. Backend Structure ==================== -->
+<h2 id="backend-structure">4. 后端目录结构</h2>
+<pre><code>knowledge_base/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                         # FastAPI 应用入口
+│   │   ├── config.py                       # Pydantic Settings 配置
+│   │   ├── database.py                     # 异步 SQLAlchemy engine + session
+│   │   ├── dependencies.py                 # 公共依赖注入（分页、当前用户等）
+│   │   │
+│   │   ├── api/                            # API 路由层
+│   │   │   ├── __init__.py
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── router.py              # 聚合所有子路由
+│   │   │       ├── auth.py               # 注册/登录/刷新令牌
+│   │   │       ├── notes.py              # 笔记 CRUD + 双向链接
+│   │   │       ├── documents.py          # 文档上传/解析/管理
+│   │   │       ├── search.py             # 全文搜索/联想
+│   │   │       ├── ai.py                 # AI 对话 (REST + WebSocket)
+│   │   │       ├── graph.py              # 知识图谱数据
+│   │   │       ├── tags.py               # 标签管理
+│   │   │       ├── spaces.py             # 知识空间管理
+│   │   │       └── users.py              # 用户管理
+│   │   │
+│   │   ├── core/                          # 核心组件
+│   │   │   ├── __init__.py
+│   │   │   ├── security.py               # JWT 生成/验证 + 密码哈希
+│   │   │   ├── exceptions.py             # 自定义异常 + 异常处理器
+│   │   │   ├── middleware.py             # CORS / 请求日志 中间件
+│   │   │   └── elasticsearch.py          # ES 客户端初始化 + 索引管理
+│   │   │
+│   │   ├── models/                        # SQLAlchemy 数据模型
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py                   # Base 声明 + 公共 Mixin（id/时间戳）
+│   │   │   ├── user.py                   # User / UserRole
+│   │   │   ├── note.py                   # Note / NoteVersion
+│   │   │   ├── note_link.py             # NoteLink（双向链接）
+│   │   │   ├── tag.py                    # Tag / NoteTag
+│   │   │   ├── document.py               # Document / DocumentChunk
+│   │   │   ├── space.py                 # Space / SpaceMember
+│   │   │   ├── chat.py                   # ChatSession / ChatMessage
+│   │   │   └── share.py                  # ShareLink
+│   │   │
+│   │   ├── schemas/                       # Pydantic 请求/响应模型
+│   │   │   ├── __init__.py
+│   │   │   ├── common.py                 # 分页 / 通用响应包装
+│   │   │   ├── auth.py
+│   │   │   ├── note.py
+│   │   │   ├── document.py
+│   │   │   ├── search.py
+│   │   │   ├── ai.py
+│   │   │   └── graph.py
+│   │   │
+│   │   ├── services/                      # 业务逻辑层
+│   │   │   ├── __init__.py
+│   │   │   ├── auth_service.py            # 认证/授权逻辑
+│   │   │   ├── note_service.py           # 笔记 CRUD + 版本管理
+│   │   │   ├── link_service.py           # [[双向链接]] 解析与同步
+│   │   │   ├── document_service.py       # 文档上传 + 文本提取
+│   │   │   ├── search_service.py        # ES 搜索操作
+│   │   │   ├── ai_service.py            # RAG 管线（检索→重排→生成）
+│   │   │   ├── embedding_service.py     # 文本向量化
+│   │   │   ├── graph_service.py         # 图谱数据计算
+│   │   │   └── index_service.py         # ES 索引同步管理
+│   │   │
+│   │   └── utils/                         # 工具函数
+│   │       ├── __init__.py
+│   │       ├── markdown_parser.py        # 解析 [[links]] / #tags
+│   │       ├── text_splitter.py          # 文档分块策略
+│   │       └── pagination.py             # 分页工具
+│   │
+│   ├── workers/                           # Celery 异步任务
+│   │   ├── __init__.py
+│   │   ├── celery_app.py                 # Celery 配置
+│   │   └── tasks/
+│   │       ├── __init__.py
+│   │       ├── document_tasks.py         # 文档解析 + 索引
+│   │       ├── embedding_tasks.py        # 生成 Embedding
+│   │       └── index_tasks.py            # ES 索引同步
+│   │
+│   ├── migrations/                        # Alembic 数据库迁移
+│   │   ├── env.py
+│   │   └── versions/
+│   │
+│   ├── tests/                             # 测试
+│   │   ├── conftest.py                   # Pytest fixtures
+│   │   ├── test_auth.py
+│   │   ├── test_notes.py
+│   │   ├── test_documents.py
+│   │   ├── test_search.py
+│   │   └── test_ai.py
+│   │
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   ├── .env.example
+│   ├── alembic.ini
+│   └── Dockerfile
+│
+├── frontend/                              # (见前端目录结构)
+├── docker-compose.yml                     # 基础设施编排
+├── .gitignore
+├── Makefile                              # 常用命令快捷方式
+└── README.md</code></pre>
+
+<!-- ==================== 5. API Design ==================== -->
+<h2 id="api-design">5. API 接口设计</h2>
+<p>所有 API 以 <code>/api/v1</code> 为前缀，使用 JWT Bearer Token 认证（除 auth 端点外），响应统一包装为 <code>{"code": 0, "data": ..., "message": "ok"}</code> 格式。</p>
+
+<h3>5.1 认证接口 (Auth)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/auth/register</span><span class="endpoint-desc">用户注册</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/auth/login</span><span class="endpoint-desc">用户登录，返回 access + refresh token</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/auth/refresh</span><span class="endpoint-desc">刷新 access token</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/auth/me</span><span class="endpoint-desc">获取当前用户信息</span></div>
+    <div class="endpoint"><span class="method method-put">PUT</span><span class="endpoint-path">/api/v1/auth/me</span><span class="endpoint-desc">更新个人资料</span></div>
+</div>
+
+<h3>5.2 笔记接口 (Notes)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/notes?page=1&size=20&space_id=&tag=</span><span class="endpoint-desc">笔记列表（支持过滤分页）</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/notes</span><span class="endpoint-desc">创建笔记</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/notes/{id}</span><span class="endpoint-desc">获取笔记详情</span></div>
+    <div class="endpoint"><span class="method method-put">PUT</span><span class="endpoint-path">/api/v1/notes/{id}</span><span class="endpoint-desc">更新笔记（自动保存版本）</span></div>
+    <div class="endpoint"><span class="method method-del">DEL</span><span class="endpoint-path">/api/v1/notes/{id}</span><span class="endpoint-desc">删除笔记</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/notes/{id}/backlinks</span><span class="endpoint-desc">获取反向链接笔记列表</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/notes/{id}/versions</span><span class="endpoint-desc">获取笔记版本历史</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/notes/{id}/graph</span><span class="endpoint-desc">获取笔记局部图谱</span></div>
+</div>
+
+<h3>5.3 文档接口 (Documents)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/documents/upload</span><span class="endpoint-desc">上传文档（multipart，触发异步解析）</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/documents?page=1&size=20</span><span class="endpoint-desc">文档列表</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/documents/{id}</span><span class="endpoint-desc">文档详情（含解析状态）</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/documents/{id}/content</span><span class="endpoint-desc">获取文档提取的文本内容</span></div>
+    <div class="endpoint"><span class="method method-del">DEL</span><span class="endpoint-path">/api/v1/documents/{id}</span><span class="endpoint-desc">删除文档</span></div>
+</div>
+
+<h3>5.4 搜索接口 (Search)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/search?q=keyword&type=all&tag=&space_id=</span><span class="endpoint-desc">全文搜索（笔记 + 文档）</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/search/suggest?q=key</span><span class="endpoint-desc">搜索联想/自动补全</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/search/semantic?q=语义查询</span><span class="endpoint-desc">向量语义搜索</span></div>
+</div>
+
+<h3>5.5 AI 对话接口 (AI / RAG)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/ai/sessions</span><span class="endpoint-desc">创建对话会话</span></div>
+    <div class="endpoint"><span class="method method-ws">WS</span><span class="endpoint-path">/api/v1/ai/ws/{session_id}</span><span class="endpoint-desc">流式对话（WebSocket 推送）</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/ai/sessions</span><span class="endpoint-desc">会话列表</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/ai/sessions/{id}/messages</span><span class="endpoint-desc">会话消息历史</span></div>
+    <div class="endpoint"><span class="method method-del">DEL</span><span class="endpoint-path">/api/v1/ai/sessions/{id}</span><span class="endpoint-desc">删除会话</span></div>
+</div>
+
+<h3>5.6 知识图谱接口 (Graph)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/graph?space_id=&depth=2</span><span class="endpoint-desc">全局知识图谱（nodes + edges）</span></div>
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/graph/note/{id}?depth=2</span><span class="endpoint-desc">笔记局部图谱</span></div>
+</div>
+
+<h3>5.7 标签接口 (Tags)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/tags</span><span class="endpoint-desc">标签列表</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/tags</span><span class="endpoint-desc">创建标签</span></div>
+    <div class="endpoint"><span class="method method-put">PUT</span><span class="endpoint-path">/api/v1/tags/{id}</span><span class="endpoint-desc">更新标签</span></div>
+    <div class="endpoint"><span class="method method-del">DEL</span><span class="endpoint-path">/api/v1/tags/{id}</span><span class="endpoint-desc">删除标签</span></div>
+</div>
+
+<h3>5.8 知识空间接口 (Spaces)</h3>
+<div class="table-wrap" style="padding: 8px 14px;">
+    <div class="endpoint"><span class="method method-get">GET</span><span class="endpoint-path">/api/v1/spaces</span><span class="endpoint-desc">空间列表</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/spaces</span><span class="endpoint-desc">创建空间</span></div>
+    <div class="endpoint"><span class="method method-put">PUT</span><span class="endpoint-path">/api/v1/spaces/{id}</span><span class="endpoint-desc">更新空间</span></div>
+    <div class="endpoint"><span class="method method-post">POST</span><span class="endpoint-path">/api/v1/spaces/{id}/members</span><span class="endpoint-desc">添加空间成员</span></div>
+    <div class="endpoint"><span class="method method-put">PUT</span><span class="endpoint-path">/api/v1/spaces/{id}/members/{user_id}</span><span class="endpoint-desc">更新成员角色</span></div>
+    <div class="endpoint"><span class="method method-del">DEL</span><span class="endpoint-path">/api/v1/spaces/{id}/members/{user_id}</span><span class="endpoint-desc">移除成员</span></div>
+</div>
+
+<!-- ==================== 6. Database Schema ==================== -->
+<h2 id="db-schema">6. 数据库设计 (MySQL)</h2>
+
+<h3>6.1 ER 关系图</h3>
+<div class="diagram-box">
+<svg width="860" height="400" viewBox="0 0 860 400" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowER" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 Z" fill="#64748B"/>
+        </marker>
+    </defs>
+
+    <!-- users -->
+    <rect x="20" y="20" width="140" height="70" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="90" y="40" text-anchor="middle" fill="#818CF8" font-size="13" font-weight="700">users</text>
+    <text x="90" y="58" text-anchor="middle" fill="#64748B" font-size="10">id, username</text>
+    <text x="90" y="72" text-anchor="middle" fill="#64748B" font-size="10">email, role</text>
+    <text x="90" y="86" text-anchor="middle" fill="#64748B" font-size="10">password_hash</text>
+
+    <!-- spaces -->
+    <rect x="200" y="20" width="140" height="70" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="270" y="40" text-anchor="middle" fill="#06B6D4" font-size="13" font-weight="700">spaces</text>
+    <text x="270" y="58" text-anchor="middle" fill="#64748B" font-size="10">id, name</text>
+    <text x="270" y="72" text-anchor="middle" fill="#64748B" font-size="10">owner_id → users</text>
+    <text x="270" y="86" text-anchor="middle" fill="#64748B" font-size="10">visibility</text>
+
+    <!-- notes -->
+    <rect x="380" y="20" width="140" height="80" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+    <text x="450" y="40" text-anchor="middle" fill="#10B981" font-size="13" font-weight="700">notes</text>
+    <text x="450" y="56" text-anchor="middle" fill="#64748B" font-size="10">id, uuid, title</text>
+    <text x="450" y="70" text-anchor="middle" fill="#64748B" font-size="10">content, content_html</text>
+    <text x="450" y="84" text-anchor="middle" fill="#64748B" font-size="10">user_id, space_id</text>
+    <text x="450" y="96" text-anchor="middle" fill="#64748B" font-size="10">status, excerpt</text>
+
+    <!-- note_links -->
+    <rect x="560" y="20" width="140" height="65" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="630" y="40" text-anchor="middle" fill="#F59E0B" font-size="13" font-weight="700">note_links</text>
+    <text x="630" y="58" text-anchor="middle" fill="#64748B" font-size="10">source_note_id → notes</text>
+    <text x="630" y="72" text-anchor="middle" fill="#64748B" font-size="10">target_note_id → notes</text>
+
+    <!-- tags -->
+    <rect x="740" y="20" width="100" height="55" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="790" y="40" text-anchor="middle" fill="#818CF8" font-size="12" font-weight="700">tags</text>
+    <text x="790" y="58" text-anchor="middle" fill="#64748B" font-size="10">id, name</text>
+    <text x="790" y="72" text-anchor="middle" fill="#64748B" font-size="10">slug, color</text>
+
+    <!-- documents -->
+    <rect x="20" y="140" width="160" height="80" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="100" y="160" text-anchor="middle" fill="#06B6D4" font-size="13" font-weight="700">documents</text>
+    <text x="100" y="176" text-anchor="middle" fill="#64748B" font-size="10">id, title, file_path</text>
+    <text x="100" y="190" text-anchor="middle" fill="#64748B" font-size="10">file_type, file_size</text>
+    <text x="100" y="204" text-anchor="middle" fill="#64748B" font-size="10">status, user_id</text>
+    <text x="100" y="218" text-anchor="middle" fill="#64748B" font-size="10">content_text</text>
+
+    <!-- document_chunks -->
+    <rect x="220" y="140" width="160" height="70" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="300" y="160" text-anchor="middle" fill="#F59E0B" font-size="13" font-weight="700">document_chunks</text>
+    <text x="300" y="178" text-anchor="middle" fill="#64748B" font-size="10">id, document_id → documents</text>
+    <text x="300" y="192" text-anchor="middle" fill="#64748B" font-size="10">chunk_index, content</text>
+    <text x="300" y="206" text-anchor="middle" fill="#64748B" font-size="10">embedding_id</text>
+
+    <!-- chat_sessions -->
+    <rect x="420" y="140" width="160" height="70" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="500" y="160" text-anchor="middle" fill="#818CF8" font-size="13" font-weight="700">chat_sessions</text>
+    <text x="500" y="178" text-anchor="middle" fill="#64748B" font-size="10">id, uuid, title</text>
+    <text x="500" y="192" text-anchor="middle" fill="#64748B" font-size="10">user_id → users</text>
+    <text x="500" y="206" text-anchor="middle" fill="#64748B" font-size="10">model, space_id</text>
+
+    <!-- chat_messages -->
+    <rect x="620" y="140" width="160" height="70" rx="8" fill="#1E293B" stroke="#EF4444" stroke-width="1.5"/>
+    <text x="700" y="160" text-anchor="middle" fill="#EF4444" font-size="13" font-weight="700">chat_messages</text>
+    <text x="700" y="178" text-anchor="middle" fill="#64748B" font-size="10">id, session_id → sessions</text>
+    <text x="700" y="192" text-anchor="middle" fill="#64748B" font-size="10">role, content</text>
+    <text x="700" y="206" text-anchor="middle" fill="#64748B" font-size="10">sources (JSON)</text>
+
+    <!-- space_members -->
+    <rect x="180" y="260" width="140" height="60" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1"/>
+    <text x="250" y="280" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">space_members</text>
+    <text x="250" y="298" text-anchor="middle" fill="#64748B" font-size="10">space_id, user_id</text>
+    <text x="250" y="312" text-anchor="middle" fill="#64748B" font-size="10">role</text>
+
+    <!-- note_tags -->
+    <rect x="400" y="260" width="120" height="55" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1"/>
+    <text x="460" y="280" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">note_tags</text>
+    <text x="460" y="298" text-anchor="middle" fill="#64748B" font-size="10">note_id, tag_id</text>
+
+    <!-- note_versions -->
+    <rect x="580" y="260" width="140" height="60" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1"/>
+    <text x="650" y="280" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">note_versions</text>
+    <text x="650" y="298" text-anchor="middle" fill="#64748B" font-size="10">note_id, version</text>
+    <text x="650" y="312" text-anchor="middle" fill="#64748B" font-size="10">content, user_id</text>
+
+    <!-- share_links -->
+    <rect x="760" y="260" width="120" height="60" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1"/>
+    <text x="820" y="280" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">share_links</text>
+    <text x="820" y="298" text-anchor="middle" fill="#64748B" font-size="10">token, note_id</text>
+    <text x="820" y="312" text-anchor="middle" fill="#64748B" font-size="10">expires_at</text>
+
+    <!-- Connections -->
+    <line x1="90" y1="90" x2="90" y2="140" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="160" y1="55" x2="200" y2="55" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="340" y1="55" x2="380" y2="55" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="520" y1="55" x2="560" y2="55" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="660" y1="85" x2="700" y2="140" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="180" y1="175" x2="220" y2="175" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="380" y1="175" x2="420" y2="175" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="580" y1="175" x2="620" y2="175" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="270" y1="90" x2="270" y2="260" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="450" y1="100" x2="450" y2="260" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="490" y1="100" x2="640" y2="260" stroke="#64748B" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+    <line x1="530" y1="60" x2="780" y2="75" stroke="#64748B" stroke-width="0.8" stroke-dasharray="3,2" marker-end="url(#arrowER)"/>
+</svg>
+</div>
+
+<h3>6.2 核心表结构</h3>
+
+<h4>users — 用户表</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>字段</th><th>类型</th><th>约束</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>id</td><td>BIGINT</td><td>PK, AUTO_INCREMENT</td><td>主键</td></tr>
+        <tr><td>username</td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td><td>用户名</td></tr>
+        <tr><td>email</td><td>VARCHAR(255)</td><td>UNIQUE, NOT NULL</td><td>邮箱</td></tr>
+        <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>bcrypt 密码哈希</td></tr>
+        <tr><td>display_name</td><td>VARCHAR(100)</td><td>NULL</td><td>显示名称</td></tr>
+        <tr><td>avatar_url</td><td>VARCHAR(500)</td><td>NULL</td><td>头像 URL</td></tr>
+        <tr><td>role</td><td>ENUM</td><td>DEFAULT 'editor'</td><td>admin / editor / viewer</td></tr>
+        <tr><td>is_active</td><td>BOOLEAN</td><td>DEFAULT TRUE</td><td>是否激活</td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>创建时间</td></tr>
+        <tr><td>updated_at</td><td>DATETIME</td><td>ON UPDATE NOW</td><td>更新时间</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>notes — 笔记表</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>字段</th><th>类型</th><th>约束</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>id</td><td>BIGINT</td><td>PK, AUTO_INCREMENT</td><td>主键</td></tr>
+        <tr><td>uuid</td><td>CHAR(36)</td><td>UNIQUE</td><td>UUID（用于公开分享）</td></tr>
+        <tr><td>title</td><td>VARCHAR(200)</td><td>NOT NULL</td><td>笔记标题</td></tr>
+        <tr><td>content</td><td>LONGTEXT</td><td>NOT NULL</td><td>Markdown 原文</td></tr>
+        <tr><td>content_html</td><td>LONGTEXT</td><td>NULL</td><td>渲染后 HTML 缓存</td></tr>
+        <tr><td>excerpt</td><td>VARCHAR(500)</td><td>NULL</td><td>摘要</td></tr>
+        <tr><td>user_id</td><td>BIGINT</td><td>FK → users.id</td><td>作者</td></tr>
+        <tr><td>space_id</td><td>BIGINT</td><td>FK → spaces.id, NULL</td><td>所属空间</td></tr>
+        <tr><td>status</td><td>ENUM</td><td>DEFAULT 'draft'</td><td>draft / published / archived</td></tr>
+        <tr><td>is_pinned</td><td>BOOLEAN</td><td>DEFAULT FALSE</td><td>是否置顶</td></tr>
+        <tr><td>view_count</td><td>INT</td><td>DEFAULT 0</td><td>浏览次数</td></tr>
+        <tr><td>word_count</td><td>INT</td><td>DEFAULT 0</td><td>字数统计</td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>创建时间</td></tr>
+        <tr><td>updated_at</td><td>DATETIME</td><td>ON UPDATE NOW</td><td>更新时间</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>note_links — 双向链接表</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>字段</th><th>类型</th><th>约束</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>id</td><td>BIGINT</td><td>PK</td><td>主键</td></tr>
+        <tr><td>source_note_id</td><td>BIGINT</td><td>FK → notes.id</td><td>源笔记</td></tr>
+        <tr><td>target_note_id</td><td>BIGINT</td><td>FK → notes.id</td><td>目标笔记</td></tr>
+        <tr><td>link_text</td><td>VARCHAR(200)</td><td>NOT NULL</td><td>链接显示文本</td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>创建时间</td></tr>
+        <tr colspan="4"><td colspan="4" style="color: var(--text-muted); font-size: 12px;">唯一约束: UNIQUE(source_note_id, target_note_id) — 防止重复链接</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>documents — 文档表</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>字段</th><th>类型</th><th>约束</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>id</td><td>BIGINT</td><td>PK</td><td>主键</td></tr>
+        <tr><td>title</td><td>VARCHAR(200)</td><td>NOT NULL</td><td>文档标题</td></tr>
+        <tr><td>original_filename</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>原始文件名</td></tr>
+        <tr><td>file_path</td><td>VARCHAR(500)</td><td>NOT NULL</td><td>MinIO 存储路径</td></tr>
+        <tr><td>file_type</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>pdf / docx / md / html / epub</td></tr>
+        <tr><td>file_size</td><td>BIGINT</td><td>NOT NULL</td><td>文件大小 (bytes)</td></tr>
+        <tr><td>content_text</td><td>LONGTEXT</td><td>NULL</td><td>提取的纯文本</td></tr>
+        <tr><td>status</td><td>ENUM</td><td>DEFAULT 'pending'</td><td>pending / processing / completed / failed</td></tr>
+        <tr><td>user_id</td><td>BIGINT</td><td>FK → users.id</td><td>上传者</td></tr>
+        <tr><td>space_id</td><td>BIGINT</td><td>FK → spaces.id</td><td>所属空间</td></tr>
+        <tr><td>error_message</td><td>TEXT</td><td>NULL</td><td>解析错误信息</td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>创建时间</td></tr>
+        <tr><td>processed_at</td><td>DATETIME</td><td>NULL</td><td>处理完成时间</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>chat_messages — AI 对话消息表</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>字段</th><th>类型</th><th>约束</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>id</td><td>BIGINT</td><td>PK</td><td>主键</td></tr>
+        <tr><td>session_id</td><td>BIGINT</td><td>FK → chat_sessions.id</td><td>会话 ID</td></tr>
+        <tr><td>role</td><td>ENUM</td><td>NOT NULL</td><td>user / assistant / system</td></tr>
+        <tr><td>content</td><td>LONGTEXT</td><td>NOT NULL</td><td>消息内容</td></tr>
+        <tr><td>sources</td><td>JSON</td><td>NULL</td><td>引用来源 [{note_id, title, snippet, score}]</td></tr>
+        <tr><td>token_count</td><td>INT</td><td>DEFAULT 0</td><td>Token 消耗</td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>创建时间</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ==================== 7. ES Index ==================== -->
+<h2 id="es-index">7. Elasticsearch 索引设计</h2>
+
+<div class="callout">
+    <p><strong>设计策略：</strong>Elasticsearch 同时承担全文搜索和向量语义检索双重职责。使用 <code>dense_vector</code> 字段存储 Embedding，配合 <code>kNN</code> 查询实现语义检索。搜索时采用混合策略：BM25 全文检索分数 + kNN 向量相似度分数加权融合。</p>
+</div>
+
+<h3>7.1 notes_index — 笔记索引</h3>
+<pre><code>{
+  "mappings": {
+    "properties": {
+      "note_id":      { "type": "long" },
+      "title":        { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
+      "content":      { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
+      "excerpt":      { "type": "text", "analyzer": "ik_max_word" },
+      "tags":         { "type": "keyword" },
+      "user_id":      { "type": "keyword" },
+      "space_id":     { "type": "keyword" },
+      "status":       { "type": "keyword" },
+      "is_pinned":    { "type": "boolean" },
+      "word_count":   { "type": "integer" },
+      "created_at":   { "type": "date" },
+      "updated_at":   { "type": "date" },
+      "embedding":    {
+        "type": "dense_vector",
+        "dims": 1536,
+        "index": true,
+        "similarity": "cosine"
+      }
+    }
+  }
+}</code></pre>
+
+<h3>7.2 documents_index — 文档索引</h3>
+<pre><code>{
+  "mappings": {
+    "properties": {
+      "document_id":  { "type": "long" },
+      "chunk_index":  { "type": "integer" },
+      "title":        { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
+      "content":      { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
+      "file_type":    { "type": "keyword" },
+      "user_id":      { "type": "keyword" },
+      "space_id":     { "type": "keyword" },
+      "metadata":     { "type": "object", "enabled": false },
+      "created_at":   { "type": "date" },
+      "embedding":    {
+        "type": "dense_vector",
+        "dims": 1536,
+        "index": true,
+        "similarity": "cosine"
+      }
+    }
+  }
+}</code></pre>
+
+<h3>7.3 混合搜索策略</h3>
+<div class="diagram-box">
+<svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowMix" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 Z" fill="#06B6D4"/>
+        </marker>
+    </defs>
+
+    <!-- User Query -->
+    <rect x="300" y="10" width="180" height="40" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="390" y="35" text-anchor="middle" fill="#818CF8" font-size="13" font-weight="600">用户查询 (Query)</text>
+
+    <!-- Embedding -->
+    <rect x="300" y="65" width="180" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="390" y="87" text-anchor="middle" fill="#94A3B8" font-size="12">Embedding 向量化</text>
+    <line x1="390" y1="50" x2="390" y2="65" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowMix)"/>
+
+    <!-- Two branches -->
+    <rect x="60" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+    <text x="160" y="140" text-anchor="middle" fill="#10B981" font-size="13" font-weight="600">BM25 全文检索</text>
+    <text x="160" y="157" text-anchor="middle" fill="#64748B" font-size="10">关键词匹配 + IK 分词</text>
+    <line x1="350" y1="100" x2="200" y2="120" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowMix)"/>
+
+    <rect x="290" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="390" y="140" text-anchor="middle" fill="#F59E0B" font-size="13" font-weight="600">kNN 向量检索</text>
+    <text x="390" y="157" text-anchor="middle" fill="#64748B" font-size="10">语义相似度 + cosine</text>
+    <line x1="390" y1="100" x2="390" y2="120" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowMix)"/>
+
+    <!-- RRF Fusion -->
+    <rect x="520" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="620" y="140" text-anchor="middle" fill="#06B6D4" font-size="13" font-weight="600">RRF 分数融合</text>
+    <text x="620" y="157" text-anchor="middle" fill="#64748B" font-size="10">Reciprocal Rank Fusion</text>
+    <line x1="260" y1="142" x2="520" y2="142" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowMix)"/>
+    <line x1="490" y1="142" x2="520" y2="142" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowMix)"/>
+</svg>
+</div>
+
+<!-- ==================== 8. Frontend Structure ==================== -->
+<h2 id="frontend-structure">8. 前端目录结构</h2>
+<pre><code>frontend/
+├── src/
+│   ├── main.ts                            # 应用入口
+│   ├── App.vue                            # 根组件
+│   │
+│   ├── router/
+│   │   └── index.ts                       # 路由配置 + 守卫
+│   │
+│   ├── stores/                            # Pinia 状态管理
+│   │   ├── auth.ts                        # 认证状态
+│   │   ├── note.ts                        # 笔记状态
+│   │   ├── search.ts                      # 搜索状态
+│   │   └── chat.ts                        # AI 对话状态
+│   │
+│   ├── api/                               # API 调用层
+│   │   ├── client.ts                      # Axios 实例 + 拦截器
+│   │   ├── auth.ts
+│   │   ├── notes.ts
+│   │   ├── documents.ts
+│   │   ├── search.ts
+│   │   ├── ai.ts
+│   │   └── graph.ts
+│   │
+│   ├── views/                             # 页面视图
+│   │   ├── auth/
+│   │   │   ├── LoginView.vue             # 登录页
+│   │   │   └── RegisterView.vue          # 注册页
+│   │   ├── notes/
+│   │   │   ├── NoteListView.vue          # 笔记列表
+│   │   │   ├── NoteEditorView.vue        # 笔记编辑器
+│   │   │   └── NoteDetailView.vue        # 笔记详情（只读 + 反链）
+│   │   ├── search/
+│   │   │   └── SearchView.vue            # 搜索中心
+│   │   ├── ai/
+│   │   │   └── ChatView.vue              # AI 对话
+│   │   ├── graph/
+│   │   │   └── GraphView.vue             # 知识图谱全屏
+│   │   ├── documents/
+│   │   │   └── DocumentsView.vue         # 文档管理
+│   │   └── settings/
+│   │       └── SettingsView.vue          # 设置
+│   │
+│   ├── components/                        # 可复用组件
+│   │   ├── layout/
+│   │   │   ├── AppLayout.vue            # 主布局
+│   │   │   ├── Sidebar.vue              # 侧边栏导航
+│   │   │   └── Header.vue               # 顶栏（搜索框 + 用户菜单）
+│   │   ├── editor/
+│   │   │   └── MarkdownEditor.vue       # Milkdown 编辑器封装
+│   │   ├── graph/
+│   │   │   └── KnowledgeGraph.vue       # vis-network 图谱组件
+│   │   ├── search/
+│   │   │   ├── SearchBar.vue            # 搜索栏
+│   │   │   └── SearchResultCard.vue     # 搜索结果卡片
+│   │   ├── note/
+│   │   │   ├── NoteCard.vue             # 笔记卡片
+│   │   │   ├── BacklinkList.vue         # 反向链接列表
+│   │   │   └── TagSelector.vue          # 标签选择器
+│   │   └── common/
+│   │       ├── Pagination.vue
+│   │       ├── EmptyState.vue
+│   │       └── LoadingSpinner.vue
+│   │
+│   ├── composables/                      # 组合式函数
+│   │   ├── useWebSocket.ts              # WebSocket 管理
+│   │   ├── useMarkdown.ts              # Markdown 渲染 + link 解析
+│   │   └── useDebounce.ts
+│   │
+│   ├── assets/
+│   │   └── styles/
+│   │       ├── main.css                # 全局样式
+│   │       └── themes.css              # 主题变量
+│   │
+│   ├── types/                            # TypeScript 类型定义
+│   │   ├── note.ts
+│   │   ├── document.ts
+│   │   ├── search.ts
+│   │   └── ai.ts
+│   │
+│   └── utils/
+│       └── format.ts                    # 日期/文件大小格式化
+│
+├── public/
+├── index.html
+├── vite.config.ts
+├── tsconfig.json
+├── package.json
+└── Dockerfile</code></pre>
+
+<!-- ==================== 9. Pages ==================== -->
+<h2 id="pages">9. 页面与组件设计</h2>
+
+<div class="card-grid">
+    <div class="card">
+        <h4>📝 笔记编辑器</h4>
+        <p>三栏布局：左侧目录树 / 中间 Milkdown 编辑器 / 右侧反向链接面板。编辑时实时解析 <code>[[双链]]</code> 和 <code>#标签</code>，右键可快速创建新笔记链接。</p>
+    </div>
+    <div class="card">
+        <h4>🔍 搜索中心</h4>
+        <p>顶部大搜索框，支持全文搜索和语义搜索切换。结果按相关度排序，高亮匹配关键词，支持按标签/时间/空间分面过滤。</p>
+    </div>
+    <div class="card">
+        <h4>🤖 AI 对话</h4>
+        <p>类似 ChatGPT 的对话界面。支持流式回答（WebSocket），回答下方展示引用的笔记/文档片段，可点击跳转查看原文。</p>
+    </div>
+    <div class="card">
+        <h4>🔗 知识图谱</h4>
+        <p>全屏力导向图，节点为笔记，边为双向链接。节点大小反映连接数，颜色区分标签。支持拖拽、缩放、点击跳转笔记。</p>
+    </div>
+    <div class="card">
+        <h4>📄 文档管理</h4>
+        <p>上传区域支持拖拽上传，展示处理状态（待处理/解析中/已完成/失败）。已完成文档可预览提取的文本内容。</p>
+    </div>
+    <div class="card">
+        <h4>⚙️ 设置</h4>
+        <p>个人资料、密码修改、知识空间管理、空间成员管理、API Key 配置（LLM / Embedding 模型选择）。</p>
+    </div>
+</div>
+
+<!-- ==================== 10. Notes ==================== -->
+<h2 id="feat-notes">10. 笔记管理与双向链接</h2>
+
+<h3>10.1 双向链接机制</h3>
+<p>用户在 Markdown 中使用 <code>[[笔记标题]]</code> 语法引用其他笔记。保存时系统自动解析所有链接，更新 <code>note_links</code> 表。</p>
+
+<div class="diagram-box">
+<svg width="760" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowLink" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 Z" fill="#06B6D4"/>
+        </marker>
+    </defs>
+
+    <!-- Step 1 -->
+    <rect x="30" y="30" width="160" height="50" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="110" y="52" text-anchor="middle" fill="#818CF8" font-size="12" font-weight="600">1. 用户编辑笔记</text>
+    <text x="110" y="68" text-anchor="middle" fill="#64748B" font-size="10">输入 [[链接]] 语法</text>
+
+    <!-- Step 2 -->
+    <rect x="230" y="30" width="160" height="50" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="310" y="52" text-anchor="middle" fill="#06B6D4" font-size="12" font-weight="600">2. 保存触发解析</text>
+    <text x="310" y="68" text-anchor="middle" fill="#64748B" font-size="10">markdown_parser 提取链接</text>
+
+    <!-- Step 3 -->
+    <rect x="430" y="30" width="160" height="50" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+    <text x="510" y="52" text-anchor="middle" fill="#10B981" font-size="12" font-weight="600">3. 同步 note_links</text>
+    <text x="510" y="68" text-anchor="middle" fill="#64748B" font-size="10">增删改链接关系</text>
+
+    <!-- Step 4 -->
+    <rect x="610" y="30" width="130" height="50" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="675" y="52" text-anchor="middle" fill="#F59E0B" font-size="12" font-weight="600">4. ES 索引</text>
+    <text x="675" y="68" text-anchor="middle" fill="#64748B" font-size="10">更新搜索索引</text>
+
+    <line x1="190" y1="55" x2="230" y2="55" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowLink)"/>
+    <line x1="390" y1="55" x2="430" y2="55" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowLink)"/>
+    <line x1="590" y1="55" x2="610" y2="55" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowLink)"/>
+
+    <!-- Backlinks -->
+    <rect x="200" y="130" width="360" height="70" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="380" y="155" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="600">反向链接查询</text>
+    <text x="380" y="175" text-anchor="middle" fill="#64748B" font-size="11">查看笔记时 → 查 note_links WHERE target_note_id = 当前笔记</text>
+    <text x="380" y="190" text-anchor="middle" fill="#64748B" font-size="11">返回所有引用了此笔记的源笔记列表（含上下文片段）</text>
+
+    <line x1="510" y1="80" x2="380" y2="130" stroke="#475569" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrowLink)"/>
+</svg>
+</div>
+
+<h4>链接解析规则</h4>
+<ul>
+    <li><code>[[笔记标题]]</code> — 按标题精确匹配，匹配不到则显示为红色（悬空链接）</li>
+    <li><code>[[笔记标题|显示文本]]</code> — 自定义显示文本</li>
+    <li><code>[[笔记标题#章节]]</code> — 链接到笔记的特定章节</li>
+    <li>保存笔记时，diff 新旧链接集合：新增的插入 <code>note_links</code>，删除的移除</li>
+    <li>目标笔记被删除时，级联清理所有相关 <code>note_links</code> 记录</li>
+</ul>
+
+<h3>10.2 版本管理</h3>
+<ul>
+    <li>每次保存（非自动保存）时创建一个版本快照，存入 <code>note_versions</code></li>
+    <li>自动保存（每 30 秒）不创建版本，仅更新 <code>content</code></li>
+    <li>版本对比：前端使用 diff 算法高亮差异</li>
+    <li>支持回滚到任意历史版本</li>
+    <li>默认保留最近 50 个版本，超出自动清理最旧版本</li>
+</ul>
+
+<!-- ==================== 11. Documents ==================== -->
+<h2 id="feat-docs">11. 文档上传与解析</h2>
+
+<h3>11.1 解析流水线</h3>
+<div class="diagram-box">
+<svg width="840" height="120" viewBox="0 0 840 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowPipe" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 Z" fill="#06B6D4"/>
+        </marker>
+    </defs>
+
+    <rect x="10" y="35" width="120" height="50" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="70" y="55" text-anchor="middle" fill="#818CF8" font-size="11" font-weight="600">上传文件</text>
+    <text x="70" y="72" text-anchor="middle" fill="#64748B" font-size="10">→ MinIO</text>
+
+    <rect x="160" y="35" width="120" height="50" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="220" y="55" text-anchor="middle" fill="#06B6D4" font-size="11" font-weight="600">文本提取</text>
+    <text x="220" y="72" text-anchor="middle" fill="#64748B" font-size="10">PyMuPDF / docx</text>
+
+    <rect x="310" y="35" width="120" height="50" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+    <text x="370" y="55" text-anchor="middle" fill="#10B981" font-size="11" font-weight="600">文本分块</text>
+    <text x="370" y="72" text-anchor="middle" fill="#64748B" font-size="10">Recursive Splitter</text>
+
+    <rect x="460" y="35" width="120" height="50" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="520" y="55" text-anchor="middle" fill="#F59E0B" font-size="11" font-weight="600">向量化</text>
+    <text x="520" y="72" text-anchor="middle" fill="#64748B" font-size="10">Embedding API</text>
+
+    <rect x="610" y="35" width="120" height="50" rx="8" fill="#1E293B" stroke="#EF4444" stroke-width="1.5"/>
+    <text x="670" y="55" text-anchor="middle" fill="#EF4444" font-size="11" font-weight="600">索引入库</text>
+    <text x="670" y="72" text-anchor="middle" fill="#64748B" font-size="10">→ ES + MySQL</text>
+
+    <rect x="760" y="35" width="70" height="50" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="795" y="55" text-anchor="middle" fill="#818CF8" font-size="11" font-weight="600">完成</text>
+    <text x="795" y="72" text-anchor="middle" fill="#64748B" font-size="10">status=done</text>
+
+    <line x1="130" y1="60" x2="160" y2="60" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowPipe)"/>
+    <line x1="280" y1="60" x2="310" y2="60" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowPipe)"/>
+    <line x1="430" y1="60" x2="460" y2="60" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowPipe)"/>
+    <line x1="580" y1="60" x2="610" y2="60" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowPipe)"/>
+    <line x1="730" y1="60" x2="760" y2="60" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowPipe)"/>
+</svg>
+</div>
+
+<h4>支持的文档格式与解析库</h4>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>格式</th><th>扩展名</th><th>解析库</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>PDF</td><td>.pdf</td><td>PyMuPDF (fitz)</td><td>提取文本 + 页码元数据</td></tr>
+        <tr><td>Word</td><td>.docx</td><td>python-docx</td><td>提取段落 + 标题层级</td></tr>
+        <tr><td>Markdown</td><td>.md / .markdown</td><td>markdown-it</td><td>直接使用原文</td></tr>
+        <tr><td>纯文本</td><td>.txt</td><td>内置</td><td>直接读取</td></tr>
+        <tr><td>HTML</td><td>.html / .htm</td><td>BeautifulSoup4</td><td>提取正文，去除导航等噪声</td></tr>
+        <tr><td>EPUB</td><td>.epub</td><td>EbookLib</td><td>提取章节文本</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>分块策略</h4>
+<ul>
+    <li>使用 LangChain 的 <code>RecursiveCharacterTextSplitter</code>，优先按段落 → 句子 → 字符递归分割</li>
+    <li>每块目标 512 tokens，重叠 64 tokens（保证上下文连续性）</li>
+    <li>保留元数据：页码、章节标题、文档 ID</li>
+    <li>分块结果存入 <code>document_chunks</code> 表和 <code>documents_index</code></li>
+</ul>
+
+<!-- ==================== 12. AI ==================== -->
+<h2 id="feat-ai">12. AI 对话与问答 (RAG)</h2>
+
+<h3>12.1 RAG 流程图</h3>
+<div class="diagram-box">
+<svg width="820" height="300" viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowRAG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 Z" fill="#06B6D4"/>
+        </marker>
+    </defs>
+
+    <!-- User Question -->
+    <rect x="310" y="10" width="200" height="40" rx="8" fill="#1E293B" stroke="#818CF8" stroke-width="1.5"/>
+    <text x="410" y="35" text-anchor="middle" fill="#818CF8" font-size="13" font-weight="600">用户提问</text>
+
+    <!-- Embedding -->
+    <rect x="310" y="65" width="200" height="35" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1"/>
+    <text x="410" y="87" text-anchor="middle" fill="#94A3B8" font-size="12">Embedding 向量化</text>
+    <line x1="410" y1="50" x2="410" y2="65" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowRAG)"/>
+
+    <!-- Dual Retrieval -->
+    <rect x="60" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+    <text x="160" y="140" text-anchor="middle" fill="#10B981" font-size="12" font-weight="600">全文检索 (BM25)</text>
+    <text x="160" y="155" text-anchor="middle" fill="#64748B" font-size="10">笔记 + 文档 chunk</text>
+
+    <rect x="310" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="410" y="140" text-anchor="middle" fill="#F59E0B" font-size="12" font-weight="600">向量检索 (kNN)</text>
+    <text x="410" y="155" text-anchor="middle" fill="#64748B" font-size="10">语义相似 Top-K</text>
+
+    <rect x="560" y="120" width="200" height="45" rx="8" fill="#1E293B" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="660" y="140" text-anchor="middle" fill="#06B6D4" font-size="12" font-weight="600">RRF 分数融合</text>
+    <text x="660" y="155" text-anchor="middle" fill="#64748B" font-size="10">取 Top-N 结果</text>
+
+    <line x1="350" y1="100" x2="200" y2="120" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRAG)"/>
+    <line x1="410" y1="100" x2="410" y2="120" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRAG)"/>
+    <line x1="260" y1="142" x2="560" y2="142" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRAG)"/>
+    <line x1="510" y1="142" x2="560" y2="142" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRAG)"/>
+
+    <!-- Context Assembly -->
+    <rect x="260" y="190" width="300" height="40" rx="8" fill="#1E293B" stroke="#4F46E5" stroke-width="1.5"/>
+    <text x="410" y="215" text-anchor="middle" fill="#818CF8" font-size="12" font-weight="600">组装 Prompt（上下文 + 对话历史 + 问题）</text>
+    <line x1="660" y1="165" x2="410" y2="190" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowRAG)"/>
+
+    <!-- LLM Generation -->
+    <rect x="260" y="250" width="300" height="40" rx="8" fill="#1E293B" stroke="#EF4444" stroke-width="1.5"/>
+    <text x="410" y="275" text-anchor="middle" fill="#EF4444" font-size="12" font-weight="600">LLM 流式生成 → WebSocket 推送</text>
+    <line x1="410" y1="230" x2="410" y2="250" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arrowRAG)"/>
+</svg>
+</div>
+
+<h3>12.2 关键设计</h3>
+<ul>
+    <li><strong>检索范围：</strong>默认检索当前用户的所有笔记 + 已完成解析的文档。可通过 <code>space_id</code> 限定搜索范围。</li>
+    <li><strong>Top-K 检索：</strong>BM25 和 kNN 各取 Top-10，RRF 融合后取 Top-5 作为 LLM 上下文。</li>
+    <li><strong>Prompt 模板：</strong>包含系统提示（角色 + 规则）、检索到的上下文片段（带来源标注）、对话历史（最近 6 轮）、用户当前问题。</li>
+    <li><strong>引用溯源：</strong>LLM 回答中标记引用编号 <code>[1]</code> <code>[2]</code>，<code>sources</code> 字段存储对应的笔记/文档片段元信息，前端渲染为可点击的引用链接。</li>
+    <li><strong>流式响应：</strong>通过 WebSocket 将 LLM 的流式输出实时推送到前端，避免长时间等待。</li>
+    <li><strong>模型切换：</strong>支持配置不同的 LLM 提供商（OpenAI GPT-4 / Anthropic Claude / 本地 Ollama），通过环境变量切换。</li>
+</ul>
+
+<h3>12.3 WebSocket 消息协议</h3>
+<pre><code>// 客户端 → 服务端
+{
+  "type": "chat",
+  "content": "什么是双向链接？",
+  "session_id": "uuid-xxx"
+}
+
+// 服务端 → 客户端（流式 token）
+{ "type": "token", "content": "双" }
+{ "type": "token", "content": "向" }
+{ "type": "token", "content": "链接" }
+...
+
+// 服务端 → 客户端（引用来源）
+{
+  "type": "sources",
+  "sources": [
+    { "note_id": 42, "title": "双向链接详解", "snippet": "...", "score": 0.92 },
+    { "document_id": 7, "title": "Obsidian 手册", "snippet": "...", "score": 0.85 }
+  ]
+}
+
+// 服务端 → 客户端（完成）
+{ "type": "done", "message_id": 123, "token_count": 520 }
+
+// 服务端 → 客户端（错误）
+{ "type": "error", "message": "LLM 服务暂时不可用" }</code></pre>
+
+<!-- ==================== 13. Search ==================== -->
+<h2 id="feat-search">13. 全文搜索与标签</h2>
+
+<h3>13.1 搜索能力</h3>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>功能</th><th>实现方式</th><th>说明</th></tr></thead>
+    <tbody>
+        <tr><td>关键词搜索</td><td>ES BM25 + IK 中文分词</td><td>支持中英文混合搜索，IK 插件提供智能分词</td></tr>
+        <tr><td>多字段检索</td><td>multi_match (title^3, content^1, excerpt^2)</td><td>标题权重最高，摘要次之，正文最低</td></tr>
+        <tr><td>分面过滤</td><td>aggregation</td><td>按标签、空间、时间范围、文档类型聚合过滤</td></tr>
+        <tr><td>搜索高亮</td><td>highlight</td><td>匹配关键词高亮显示</td></tr>
+        <tr><td>搜索联想</td><td>completion_suggester</td><td>输入时实时推荐补全词</td></tr>
+        <tr><td>语义搜索</td><td>kNN dense_vector</td><td>基于向量相似度的语义级检索</td></tr>
+        <tr><td>排序选项</td><td>sort</td><td>相关度 / 创建时间 / 更新时间</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h3>13.2 索引同步策略</h3>
+<ul>
+    <li><strong>笔记保存：</strong>Celery 异步任务将笔记内容同步到 <code>notes_index</code></li>
+    <li><strong>文档解析完成：</strong>将所有 chunk 同步到 <code>documents_index</code></li>
+    <li><strong>笔记删除：</strong>从 ES 索引中删除对应文档</li>
+    <li><strong>重建索引：</strong>提供管理接口，从 MySQL 全量重建 ES 索引（用于初始化或修复）</li>
+</ul>
+
+<!-- ==================== 14. Auth ==================== -->
+<h2 id="feat-auth">14. 权限与协作</h2>
+
+<h3>14.1 认证机制</h3>
+<ul>
+    <li><strong>JWT 双令牌：</strong>Access Token（30 分钟有效期）+ Refresh Token（7 天有效期，存 Redis）</li>
+    <li><strong>密码安全：</strong>bcrypt 哈希 + 密码强度校验（最少 8 位，含字母数字）</li>
+    <li><strong>令牌刷新：</strong>Access Token 过期后用 Refresh Token 换取新令牌，无需重新登录</li>
+    <li><strong>登出：</strong>将 Refresh Token 从 Redis 删除，使其失效</li>
+</ul>
+
+<h3>14.2 RBAC 权限模型</h3>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>角色</th><th>个人空间</th><th>共享空间</th><th>系统管理</th></tr></thead>
+    <tbody>
+        <tr><td>admin</td><td>完全控制</td><td>完全控制 + 成员管理</td><td>用户管理、系统配置</td></tr>
+        <tr><td>editor</td><td>完全控制</td><td>读写笔记/文档</td><td>—</td></tr>
+        <tr><td>viewer</td><td>完全控制</td><td>只读</td><td>—</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h3>14.3 知识空间 (Spaces)</h3>
+<ul>
+    <li><strong>个人空间：</strong>每个用户自动创建一个默认个人空间，笔记默认归属此空间</li>
+    <li><strong>共享空间：</strong>用户可创建共享空间，邀请其他用户加入，分配 editor/viewer 角色</li>
+    <li><strong>空间隔离：</strong>笔记、文档、搜索均按空间维度隔离，用户只能访问自己有权限的空间</li>
+    <li><strong>公开分享：</strong>生成带过期时间的分享链接，无需登录即可只读访问指定笔记</li>
+</ul>
+
+<!-- ==================== 15. Graph ==================== -->
+<h2 id="feat-graph">15. 知识图谱</h2>
+
+<h3>15.1 图谱数据结构</h3>
+<pre><code>{
+  "nodes": [
+    {
+      "id": 42,
+      "label": "双向链接详解",
+      "tags": ["Obsidian", "笔记法"],
+      "degree": 5,           // 连接数（决定节点大小）
+      "status": "published"
+    },
+    ...
+  ],
+  "edges": [
+    {
+      "source": 42,
+      "target": 18,
+      "label": "引用"
+    },
+    ...
+  ]
+}</code></pre>
+
+<h3>15.2 前端可视化</h3>
+<ul>
+    <li><strong>全局图谱：</strong>展示当前空间内所有笔记及其链接关系，力导向布局自动排列</li>
+    <li><strong>局部图谱：</strong>以单篇笔记为中心，展示 N 层深度的关联笔记（编辑器右侧面板）</li>
+    <li><strong>交互：</strong>节点可拖拽调整位置，滚轮缩放，点击节点跳转到对应笔记</li>
+    <li><strong>样式：</strong>节点大小反映连接数，颜色按标签分组，悬停显示笔记摘要</li>
+    <li><strong>筛选：</strong>按标签过滤显示的节点，隐藏孤立节点</li>
+</ul>
+
+<!-- ==================== 16. Deployment ==================== -->
+<h2 id="deployment">16. 部署方案</h2>
+
+<h3>16.1 Docker Compose 编排</h3>
+<pre><code>services:
+  # 基础设施
+  mysql:          # MySQL 8.0 — 数据存储
+  elasticsearch:  # ES 8.x + IK 分词插件 — 搜索 + 向量
+  redis:          # Redis 7 — 缓存 + Celery broker
+  minio:          # MinIO — 对象存储
+
+  # 应用
+  backend:        # FastAPI (uvicorn) — API + WebSocket
+  worker:         # Celery Worker — 异步任务
+  frontend:       # Vue 3 静态文件 — 由 Nginx 服务
+
+  # 网关
+  nginx:          # 反向代理 + 前端静态资源 + WebSocket 代理</code></pre>
+
+<h3>16.2 环境配置</h3>
+<div class="table-wrap">
+<table>
+    <thead><tr><th>环境变量</th><th>说明</th><th>默认值</th></tr></thead>
+    <tbody>
+        <tr><td><code>DATABASE_URL</code></td><td>MySQL 连接串</td><td>mysql+asyncmy://...</td></tr>
+        <tr><td><code>ELASTICSEARCH_URL</code></td><td>ES 连接地址</td><td>http://localhost:9200</td></tr>
+        <tr><td><code>REDIS_URL</code></td><td>Redis 连接地址</td><td>redis://localhost:6379/0</td></tr>
+        <tr><td><code>MINIO_ENDPOINT</code></td><td>MinIO 地址</td><td>localhost:9000</td></tr>
+        <tr><td><code>JWT_SECRET</code></td><td>JWT 签名密钥</td><td>—（必须设置）</td></tr>
+        <tr><td><code>LLM_API_KEY</code></td><td>LLM API 密钥</td><td>—</td></tr>
+        <tr><td><code>LLM_MODEL</code></td><td>LLM 模型名称</td><td>gpt-4o-mini</td></tr>
+        <tr><td><code>EMBEDDING_MODEL</code></td><td>Embedding 模型</td><td>text-embedding-3-small</td></tr>
+        <tr><td><code>EMBEDDING_DIMS</code></td><td>向量维度</td><td>1536</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h3>16.3 Nginx 路由规则</h3>
+<pre><code># 前端静态资源
+location / {
+    root /usr/share/nginx/html;
+    try_files $uri $uri/ /index.html;    # SPA history 模式
+}
+
+# API 代理
+location /api/ {
+    proxy_pass http://backend:8000;
+}
+
+# WebSocket 代理（AI 对话）
+location /api/v1/ai/ws/ {
+    proxy_pass http://backend:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+
+# MinIO 文件代理（可选）
+location /files/ {
+    proxy_pass http://minio:9000;
+}</code></pre>
+
+<!-- ==================== 17. Roadmap ==================== -->
+<h2 id="roadmap">17. 开发路线图</h2>
+
+<div class="timeline">
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 1 · 基础框架</div>
+        <div class="timeline-title">项目初始化与基础设施</div>
+        <div class="timeline-content">
+            <ul>
+                <li>搭建项目骨架（backend + frontend 目录结构）</li>
+                <li>配置 Docker Compose（MySQL + ES + Redis + MinIO）</li>
+                <li>FastAPI 基础框架（配置、数据库连接、异常处理）</li>
+                <li>Vue 3 + Vite + Naive UI 前端框架</li>
+                <li>Alembic 初始迁移</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 2 · 认证与笔记</div>
+        <div class="timeline-title">用户系统与笔记核心功能</div>
+        <div class="timeline-content">
+            <ul>
+                <li>用户注册/登录/JWT 认证</li>
+                <li>笔记 CRUD API</li>
+                <li>Milkdown 编辑器集成</li>
+                <li>双向链接解析与 <code>note_links</code> 管理</li>
+                <li>反向链接面板 UI</li>
+                <li>标签管理</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 3 · 搜索系统</div>
+        <div class="timeline-title">Elasticsearch 全文搜索</div>
+        <div class="timeline-content">
+            <ul>
+                <li>ES 索引创建与 IK 分词配置</li>
+                <li>笔记索引同步（Celery 任务）</li>
+                <li>搜索 API（关键词搜索 + 分面过滤 + 高亮）</li>
+                <li>搜索中心页面 UI</li>
+                <li>搜索联想功能</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 4 · 文档解析</div>
+        <div class="timeline-title">文档上传与向量化</div>
+        <div class="timeline-content">
+            <ul>
+                <li>MinIO 集成 + 文件上传 API</li>
+                <li>Celery 文档解析任务（PDF/Word/Markdown）</li>
+                <li>文本分块 + Embedding 向量化</li>
+                <li>文档管理页面 UI</li>
+                <li>文档内容预览</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 5 · AI 问答</div>
+        <div class="timeline-title">RAG 管线与 AI 对话</div>
+        <div class="timeline-content">
+            <ul>
+                <li>LangChain RAG 管线搭建</li>
+                <li>混合检索（BM25 + kNN + RRF 融合）</li>
+                <li>WebSocket 流式对话</li>
+                <li>引用溯源渲染</li>
+                <li>对话历史管理</li>
+                <li>AI 对话页面 UI</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 6 · 图谱与协作</div>
+        <div class="timeline-title">知识图谱与权限协作</div>
+        <div class="timeline-content">
+            <ul>
+                <li>知识图谱 API（全局 + 局部）</li>
+                <li>vis-network 图谱可视化</li>
+                <li>知识空间管理</li>
+                <li>空间成员与权限控制</li>
+                <li>公开分享链接</li>
+                <li>笔记版本历史</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-date">Phase 7 · 优化与部署</div>
+        <div class="timeline-title">性能优化与生产部署</div>
+        <div class="timeline-content">
+            <ul>
+                <li>Redis 缓存层（热点笔记、搜索结果）</li>
+                <li>API 限流</li>
+                <li>单元测试 + API 集成测试</li>
+                <li>CI/CD 流水线</li>
+                <li>生产环境 Docker Compose 部署</li>
+                <li>Nginx 反向代理 + HTTPS</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="callout" style="margin-top: 40px;">
+    <p><strong>下一步：</strong>确认架构设计后，我将开始创建项目骨架代码——包括后端 FastAPI 框架、前端 Vue 3 项目、Docker Compose 配置以及数据库初始迁移。</p>
+</div>
+
+</main>
+
+<script>
+    // Sidebar active link on scroll
+    const sections = document.querySelectorAll('h2[id]');
+    const navLinks = document.querySelectorAll('.sidebar a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (window.scrollY >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base — 项目结构总览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "SF Pro Text", "PingFang SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0F172A;
+    color: #E5E7EB;
+    line-height: 1.6;
+    padding: 24px;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* Card */
+  .tree-card {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  /* Header */
+  .tree-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tree-title {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #818CF8, #67E8F9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .tree-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94A3B8;
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 3px 12px;
+  }
+
+  .stat-chip strong { color: #818CF8; font-weight: 700; }
+
+  /* Toolbar */
+  .tree-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tool-btn {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94A3B8;
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tool-btn:hover {
+    color: #818CF8;
+    border-color: #4F46E5;
+  }
+
+  .tool-btn.active {
+    color: #fff;
+    background: #4F46E5;
+    border-color: #4F46E5;
+  }
+
+  /* Search */
+  .search-box {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #F1F5F9;
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-box::placeholder { color: #475569; }
+  .search-box:focus { border-color: #4F46E5; }
+
+  /* Tree */
+  .tree-container {
+    max-height: 650px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+  }
+
+  .tree-container::-webkit-scrollbar { width: 6px; }
+  .tree-container::-webkit-scrollbar-track { background: transparent; }
+  .tree-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+
+  .tree-node {
+    padding: 1px 0;
+  }
+
+  .tree-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.12s;
+    overflow: hidden;
+    flex-wrap: nowrap;
+  }
+
+  .tree-row:hover { background: #334155; }
+
+  .tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    color: #64748B;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .tree-toggle.expanded { transform: rotate(90deg); }
+  .tree-toggle.leaf { visibility: hidden; }
+
+  .tree-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+  }
+
+  .tree-name {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #F1F5F9;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tree-name.dir { font-weight: 700; }
+
+  .layer-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .lb-infra  { background: rgba(245, 158, 11, 0.15);  color: #FBBF24; }
+  .lb-entry  { background: rgba(79, 70, 229, 0.15);    color: #A5B4FC; }
+  .lb-api    { background: rgba(34, 165, 247, 0.15);   color: #38BDF8; }
+  .lb-model  { background: rgba(16, 185, 129, 0.15);   color: #34D399; }
+  .lb-core   { background: rgba(239, 68, 68, 0.15);    color: #F87171; }
+  .lb-worker { background: rgba(245, 158, 11, 0.15);   color: #FBBF24; }
+  .lb-util   { background: rgba(148, 163, 184, 0.15);  color: #94A3B8; }
+  .lb-config { background: rgba(139, 92, 246, 0.15);   color: #A78BFA; }
+  .lb-test   { background: rgba(236, 72, 153, 0.15);   color: #EC4899; }
+  .lb-doc    { background: rgba(20, 184, 166, 0.15);   color: #2DD4BF; }
+
+  .tree-desc {
+    font-size: 12px;
+    color: #64748B;
+    margin-left: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .tree-children {
+    margin-left: 20px;
+    border-left: 1px solid #334155;
+    padding-left: 4px;
+    overflow: hidden;
+  }
+
+  .tree-children.collapsed { display: none; }
+
+  .tree-node.hidden { display: none; }
+  .tree-node.match .tree-name { color: #FBBF24; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #334155;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #64748B;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .tree-card { padding: 16px; }
+    .tree-desc { display: none; }
+    .tree-children { margin-left: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="tree-card">
+    <div class="tree-header">
+      <div class="tree-title">Knowledge Base — 项目结构总览</div>
+      <div class="tree-stats">
+        <span class="stat-chip"><strong>57</strong> 文件</span>
+        <span class="stat-chip"><strong>9</strong> 层级</span>
+        <span class="stat-chip"><strong>10</strong> 模块</span>
+      </div>
+    </div>
+
+    <input type="text" class="search-box" id="searchBox" placeholder="输入文件名或关键词过滤..." />
+
+    <div class="tree-toolbar">
+      <button class="tool-btn active" data-action="expand-all">全部展开</button>
+      <button class="tool-btn" data-action="collapse-all">全部折叠</button>
+      <button class="tool-btn" data-action="expand-core">核心代码</button>
+    </div>
+
+    <div class="tree-container" id="treeRoot"></div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="layer-badge lb-infra">基础设施</span></div>
+      <div class="legend-item"><span class="layer-badge lb-entry">入口/配置</span></div>
+      <div class="legend-item"><span class="layer-badge lb-api">API路由</span></div>
+      <div class="legend-item"><span class="layer-badge lb-model">数据模型</span></div>
+      <div class="legend-item"><span class="layer-badge lb-core">核心组件</span></div>
+      <div class="legend-item"><span class="layer-badge lb-worker">异步任务</span></div>
+      <div class="legend-item"><span class="layer-badge lb-util">工具函数</span></div>
+      <div class="legend-item"><span class="layer-badge lb-config">工程配置</span></div>
+      <div class="legend-item"><span class="layer-badge lb-test">测试</span></div>
+      <div class="legend-item"><span class="layer-badge lb-doc">文档</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const tree = {
+  name: "knowledge_base/", dir: true, expanded: true,
+  children: [
+    { name: "docker-compose.yml", desc: "Docker 编排：MySQL + ES + Redis + MinIO 基础设施", badge: "lb-infra" },
+    { name: "Makefile", desc: "快捷命令：install/dev/migrate/test/docker-up 等", badge: "lb-infra" },
+    { name: "README.md", desc: "项目说明与技术栈介绍", badge: "lb-doc" },
+    { name: ".gitignore", desc: "Git 忽略规则（.venv/node_modules/.env 等）", badge: "lb-config" },
+    { name: "docs/", dir: true, expanded: false, children: [
+      { name: "architecture-design.html", desc: "完整架构设计文档（交互式 HTML）", badge: "lb-doc" },
+      { name: "project-structure.html", desc: "本文件 — 交互式项目结构树", badge: "lb-doc" },
+    ]},
+    { name: "backend/", dir: true, expanded: true, children: [
+      { name: ".env.example", desc: "环境变量模板（DB/ES/Redis/MinIO/JWT/LLM 配置）", badge: "lb-config" },
+      { name: "requirements.txt", desc: "生产依赖（FastAPI/SQLAlchemy/Celery/LangChain 等）", badge: "lb-config" },
+      { name: "requirements-dev.txt", desc: "开发依赖（pytest/ruff/mypy）", badge: "lb-config" },
+      { name: "alembic.ini", desc: "Alembic 数据库迁移配置", badge: "lb-config" },
+      { name: "Dockerfile", desc: "后端容器镜像构建文件", badge: "lb-config" },
+      { name: "app/", dir: true, expanded: true, children: [
+        { name: "main.py", desc: "FastAPI 应用入口（路由挂载/中间件/异常处理）", badge: "lb-entry" },
+        { name: "config.py", desc: "Pydantic Settings 全局配置（读取 .env 环境变量）", badge: "lb-entry" },
+        { name: "database.py", desc: "异步 SQLAlchemy engine + session 工厂 + get_db 依赖", badge: "lb-entry" },
+        { name: "dependencies.py", desc: "公共依赖注入：DB session / 当前登录用户", badge: "lb-entry" },
+        { name: "api/", dir: true, expanded: true, children: [
+          { name: "v1/", dir: true, expanded: true, children: [
+            { name: "router.py", desc: "聚合所有子路由，挂载到 /api/v1 前缀", badge: "lb-api" },
+            { name: "auth.py", desc: "认证接口：注册/登录/刷新令牌/个人信息", badge: "lb-api" },
+            { name: "notes.py", desc: "笔记接口：CRUD/反向链接/版本历史/局部图谱", badge: "lb-api" },
+            { name: "documents.py", desc: "文档接口：上传/列表/详情/内容预览/删除", badge: "lb-api" },
+            { name: "search.py", desc: "搜索接口：全文搜索/联想补全/语义搜索", badge: "lb-api" },
+            { name: "ai.py", desc: "AI 接口：会话管理 + WebSocket 流式对话", badge: "lb-api" },
+            { name: "graph.py", desc: "知识图谱接口：全局图谱 + 笔记局部图谱", badge: "lb-api" },
+            { name: "tags.py", desc: "标签管理接口：CRUD", badge: "lb-api" },
+            { name: "spaces.py", desc: "知识空间接口：空间 CRUD + 成员管理", badge: "lb-api" },
+            { name: "users.py", desc: "用户管理接口：列表/更新", badge: "lb-api" },
+          ]}
+        ]},
+        { name: "core/", dir: true, expanded: false, children: [
+          { name: "security.py", desc: "JWT 令牌生成/验证 + bcrypt 密码哈希", badge: "lb-core" },
+          { name: "exceptions.py", desc: "自定义异常类 + 统一异常处理器", badge: "lb-core" },
+          { name: "elasticsearch.py", desc: "ES 客户端 + 索引 Mapping 定义 + 初始化", badge: "lb-core" },
+        ]},
+        { name: "models/", dir: true, expanded: false, children: [
+          { name: "base.py", desc: "Base 声明 + ID/Timestamp Mixin（公共字段）", badge: "lb-model" },
+          { name: "user.py", desc: "User 模型 — 用户表（含角色枚举 admin/editor/viewer）", badge: "lb-model" },
+          { name: "note.py", desc: "Note + NoteVersion — 笔记表 + 版本历史表", badge: "lb-model" },
+          { name: "note_link.py", desc: "NoteLink — 双向链接关系表（源→目标）", badge: "lb-model" },
+          { name: "tag.py", desc: "Tag + NoteTag — 标签表 + 笔记-标签关联表", badge: "lb-model" },
+          { name: "document.py", desc: "Document + DocumentChunk — 文档表 + 分块表", badge: "lb-model" },
+          { name: "space.py", desc: "Space + SpaceMember — 知识空间 + 成员表", badge: "lb-model" },
+          { name: "chat.py", desc: "ChatSession + ChatMessage — AI 对话会话与消息", badge: "lb-model" },
+          { name: "share.py", desc: "ShareLink — 公开分享链接表", badge: "lb-model" },
+        ]},
+        { name: "schemas/", dir: true, expanded: false, children: [
+          { name: "common.py", desc: "通用响应包装 + 分页参数/响应模型", badge: "lb-model" },
+          { name: "auth.py", desc: "认证相关 Pydantic 模型（注册/登录/令牌/用户）", badge: "lb-model" },
+        ]},
+        { name: "services/", dir: true, expanded: false, children: [
+          { name: "__init__.py", desc: "业务逻辑层（待实现：note/auth/search/ai 等 service）", badge: "lb-core" },
+        ]},
+        { name: "utils/", dir: true, expanded: false, children: [
+          { name: "markdown_parser.py", desc: "解析 [[双向链接]] 和 #标签，提取摘要/字数", badge: "lb-util" },
+          { name: "text_splitter.py", desc: "递归文本分块器（段落→句子→字符，含重叠）", badge: "lb-util" },
+        ]},
+      ]},
+      { name: "workers/", dir: true, expanded: false, children: [
+        { name: "celery_app.py", desc: "Celery 配置（broker=Redis，含任务超时/预取）", badge: "lb-worker" },
+        { name: "tasks/", dir: true, expanded: false, children: [
+          { name: "document_tasks.py", desc: "文档解析任务：提取文本→分块→触发向量化", badge: "lb-worker" },
+          { name: "embedding_tasks.py", desc: "Embedding 任务：文本→向量→ES 索引", badge: "lb-worker" },
+          { name: "index_tasks.py", desc: "ES 索引同步：笔记索引/重建/删除", badge: "lb-worker" },
+        ]},
+      ]},
+      { name: "migrations/", dir: true, expanded: false, children: [
+        { name: "env.py", desc: "Alembic 异步迁移环境配置（异步 engine）", badge: "lb-config" },
+        { name: "script.py.mako", desc: "迁移脚本模板", badge: "lb-config" },
+        { name: "versions/", dir: true, expanded: false, children: [
+          { name: ".gitkeep", desc: "占位文件（迁移脚本将生成在此）", badge: "lb-config" },
+        ]},
+      ]},
+      { name: "tests/", dir: true, expanded: false, children: [
+        { name: "conftest.py", desc: "Pytest fixtures（异步 HTTP 客户端 + event loop）", badge: "lb-test" },
+      ]},
+    ]},
+  ]
+};
+
+const container = document.getElementById('treeRoot');
+
+function createNode(node, level) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tree-node';
+  wrapper.setAttribute('data-name', node.name.toLowerCase());
+  if (node.desc) wrapper.setAttribute('data-desc', node.desc.toLowerCase());
+
+  const row = document.createElement('div');
+  row.className = 'tree-row';
+
+  // Build row content in a single flex line, no wrapping
+  if (node.dir) {
+    const toggle = document.createElement('span');
+    toggle.className = 'tree-toggle' + (node.expanded ? ' expanded' : '');
+    toggle.textContent = '\u25B6';
+    row.appendChild(toggle);
+
+    const icon = document.createElement('span');
+    icon.className = 'tree-icon';
+    icon.textContent = '\uD83D\uDCC1';
+    row.appendChild(icon);
+
+    const name = document.createElement('span');
+    name.className = 'tree-name dir';
+    name.textContent = node.name;
+    row.appendChild(name);
+
+    if (node.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'layer-badge ' + node.badge;
+      row.appendChild(badge);
+    }
+
+    if (node.desc) {
+      const desc = document.createElement('span');
+      desc.className = 'tree-desc';
+      desc.textContent = '\u2014 ' + node.desc;
+      row.appendChild(desc);
+    }
+
+    const childrenWrap = document.createElement('div');
+    childrenWrap.className = 'tree-children' + (node.expanded ? '' : ' collapsed');
+
+    if (node.children) {
+      node.children.forEach(function(child) {
+        childrenWrap.appendChild(createNode(child, level + 1));
+      });
+    }
+
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const isCollapsed = childrenWrap.classList.toggle('collapsed');
+      toggle.classList.toggle('expanded', !isCollapsed);
+    });
+
+    wrapper.appendChild(row);
+    wrapper.appendChild(childrenWrap);
+  } else {
+    const toggle = document.createElement('span');
+    toggle.className = 'tree-toggle leaf';
+    row.appendChild(toggle);
+
+    const icon = document.createElement('span');
+    icon.className = 'tree-icon';
+    icon.textContent = '\uD83D\uDCC4';
+    row.appendChild(icon);
+
+    const name = document.createElement('span');
+    name.className = 'tree-name';
+    name.textContent = node.name;
+    row.appendChild(name);
+
+    if (node.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'layer-badge ' + node.badge;
+      row.appendChild(badge);
+    }
+
+    if (node.desc) {
+      const desc = document.createElement('span');
+      desc.className = 'tree-desc';
+      desc.textContent = '\u2014 ' + node.desc;
+      row.appendChild(desc);
+    }
+
+    wrapper.appendChild(row);
+  }
+
+  return wrapper;
+}
+
+container.appendChild(createNode(tree, 0));
+
+// Toolbar actions
+function setAllExpanded(expanded) {
+  document.querySelectorAll('.tree-children').forEach(function(c) {
+    c.classList.toggle('collapsed', !expanded);
+  });
+  document.querySelectorAll('.tree-toggle').forEach(function(t) {
+    t.classList.toggle('expanded', expanded);
+  });
+}
+
+function setActiveBtn(btn) {
+  document.querySelectorAll('.tool-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function findNodeByName(name) {
+  const nodes = container.querySelectorAll('.tree-node');
+  for (var i = 0; i < nodes.length; i++) {
+    var nameEl = nodes[i].querySelector(':scope > .tree-row > .tree-name');
+    if (nameEl && nameEl.textContent === name) return nodes[i];
+  }
+  return null;
+}
+
+function expandNode(node) {
+  if (!node) return;
+  var c = node.querySelector(':scope > .tree-children');
+  var t = node.querySelector(':scope > .tree-row > .tree-toggle');
+  if (c) c.classList.remove('collapsed');
+  if (t) t.classList.add('expanded');
+}
+
+document.querySelectorAll('.tool-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var action = btn.getAttribute('data-action');
+    setActiveBtn(btn);
+
+    if (action === 'expand-all') {
+      setAllExpanded(true);
+    } else if (action === 'collapse-all') {
+      setAllExpanded(false);
+      // Keep root + backend expanded
+      expandNode(container.querySelector(':scope > .tree-node'));
+      expandNode(findNodeByName('backend/'));
+    } else if (action === 'expand-core') {
+      setAllExpanded(false);
+      // Expand path to app/ and its key subdirs
+      expandNode(container.querySelector(':scope > .tree-node'));
+      expandNode(findNodeByName('backend/'));
+      expandNode(findNodeByName('app/'));
+      expandNode(findNodeByName('api/'));
+      expandNode(findNodeByName('v1/'));
+      expandNode(findNodeByName('core/'));
+      expandNode(findNodeByName('models/'));
+      expandNode(findNodeByName('utils/'));
+    }
+  });
+});
+
+// Search filter
+var searchBox = document.getElementById('searchBox');
+searchBox.addEventListener('input', function() {
+  var query = this.value.trim().toLowerCase();
+  var allNodes = document.querySelectorAll('.tree-node');
+
+  if (!query) {
+    allNodes.forEach(function(n) { n.classList.remove('hidden', 'match'); });
+    return;
+  }
+
+  function checkNode(node) {
+    var name = (node.getAttribute('data-name') || '');
+    var desc = (node.getAttribute('data-desc') || '');
+    var isMatch = name.indexOf(query) !== -1 || desc.indexOf(query) !== -1;
+
+    var childMatch = false;
+    var childContainer = node.querySelector(':scope > .tree-children');
+    if (childContainer) {
+      var children = childContainer.querySelectorAll(':scope > .tree-node');
+      children.forEach(function(child) {
+        if (checkNode(child)) childMatch = true;
+      });
+      if (childMatch) {
+        childContainer.classList.remove('collapsed');
+        var toggle = node.querySelector(':scope > .tree-row > .tree-toggle');
+        if (toggle) toggle.classList.add('expanded');
+      }
+    }
+
+    if (isMatch || childMatch) {
+      node.classList.remove('hidden');
+      if (isMatch) node.classList.add('match');
+      else node.classList.remove('match');
+      return true;
+    } else {
+      node.classList.add('hidden');
+      node.classList.remove('match');
+      return false;
+    }
+  }
+
+  allNodes.forEach(function(n) { n.classList.remove('match'); });
+  var rootNode = container.querySelector(':scope > .tree-node');
+  if (rootNode) checkNode(rootNode);
+});
+</script>
+</body>
+</html>
